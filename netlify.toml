@@ -1,0 +1,4 @@
+[[redirects]]
+  from = "/api/*"
+  to = "http://fi11.bot-hosting.net:20856/api/:splat"
+  status = 200
