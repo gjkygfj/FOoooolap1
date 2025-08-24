@@ -3,130 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لحظة إلهام</title>
+    <title>حكمة اليوم | تطبيق متكامل</title>
+    
+    <!-- لتحسين المظهر على جميع الأجهزة -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700&display=swap');
-        
+        /* --- إعدادات أساسية --- */
         :root {
-            --bg-color: #f0f4f8;
-            --text-color: #2c3e50;
-            --primary-color: #3498db;
-            --secondary-color: #95a5a6;
-            --card-bg: #ffffff;
-            --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --background-color: #f4f7f9;
+            --card-background: #ffffff;
+            --text-color: #34495e;
+            --error-color: #e74c3c;
         }
 
         body {
-            font-family: 'Almarai', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background-color: var(--bg-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--background-color);
             color: var(--text-color);
-            text-align: center;
             margin: 0;
-            padding: 20px;
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            text-align: center;
         }
 
-        .container {
-            background-color: var(--card-bg);
+        /* --- تصميم الكرت --- */
+        .card {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             padding: 40px;
-            border-radius: 15px;
-            box-shadow: var(--shadow-light);
-            max-width: 600px;
-            width: 100%;
-            animation: fadeIn 1s ease-in-out;
+            max-width: 500px;
+            width: 90%;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
         }
 
         h1 {
             color: var(--primary-color);
-            font-weight: 700;
-            margin-bottom: 20px;
-            font-size: 2.5em;
+            margin-top: 0;
+            font-size: 2.2em;
+        }
+        
+        /* --- تصميم منطقة عرض الحكمة --- */
+        .wisdom-display {
+            min-height: 100px; /* يحافظ على حجم ثابت للكرت */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 30px 0;
         }
 
-        button {
-            background-color: var(--primary-color);
+        #wisdomText {
+            font-size: 1.4em;
+            font-style: italic;
+            color: var(--secondary-color);
+            line-height: 1.6;
+            margin: 0;
+            opacity: 0; /* يبدأ مخفياً ليظهر مع تأثير */
+            transform: translateY(10px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        #wisdomText.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #wisdomText.error {
+            color: var(--error-color);
+            font-style: normal;
+        }
+
+        /* --- تصميم الزر --- */
+        #getWisdomBtn {
+            background-color: var(--secondary-color);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 50px;
-            cursor: pointer;
+            border-radius: 8px;
+            padding: 15px 30px;
             font-size: 1.1em;
-            font-weight: 400;
+            font-weight: bold;
+            cursor: pointer;
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
-        
-        button:hover {
+
+        #getWisdomBtn:hover {
             background-color: #2980b9;
-            transform: translateY(-2px);
-        }
-        
-        #wisdomText {
-            margin-top: 30px;
-            font-size: 1.2em;
-            font-weight: 300;
-            line-height: 1.6;
-            min-height: 50px;
-            color: #555;
+            transform: scale(1.05);
         }
 
-        .loading {
-            color: var(--secondary-color);
-            animation: pulse 1.5s infinite;
+        #getWisdomBtn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
         }
 
-        .error {
-            color: #c0392b;
-            font-weight: 700;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>نافذتك إلى الحكمة</h1>
-        <button id="getWisdomBtn">احصل على إلهام</button>
-        <p id="wisdomText">اضغط على الزر للحصول على حكمة جديدة.</p>
-    </div>
+    <main class="card">
+        <h1>حكمة اليوم</h1>
+        
+        <div class="wisdom-display">
+            <p id="wisdomText">اضغط على الزر لاقتباس حكمة ملهمة.</p>
+        </div>
+        
+        <button id="getWisdomBtn">اقتبس حكمة جديدة</button>
+    </main>
 
     <script>
-        document.getElementById('getWisdomBtn').addEventListener('click', async () => {
-            const wisdomTextElement = document.getElementById('wisdomText');
-            wisdomTextElement.textContent = 'جاري التحميل...';
-            wisdomTextElement.className = 'loading';
+        // --- الوصول إلى عناصر الصفحة ---
+        const getWisdomBtn = document.getElementById('getWisdomBtn');
+        const wisdomText = document.getElementById('wisdomText');
+
+        // --- دالة جلب الحكمة ---
+        const fetchWisdom = async () => {
+            // 1. مرحلة التحميل: تعطيل الزر وعرض رسالة مناسبة
+            getWisdomBtn.disabled = true;
+            wisdomText.classList.remove('visible', 'error');
+            wisdomText.textContent = 'جاري البحث عن حكمة...';
+            wisdomText.classList.add('visible');
 
             try {
-                const response = await fetch('http://fi11.bot-hosting.net:20856/api/wisdom');
-                
+                // 2. إرسال الطلب: استخدام المسار النسبي الذي سيعالجه Netlify
+                const response = await fetch('/api/wisdom');
+
+                // التعامل مع الأخطاء من جانب الخادم (مثل خطأ 500)
                 if (!response.ok) {
-                    let errorMessage = `حدث خطأ في جلب الحكمة (الرمز: ${response.status}).`;
-                    wisdomTextElement.textContent = errorMessage;
-                    wisdomTextElement.className = 'error';
-                    return;
+                    throw new Error(`فشل الاتصال بالخادم. الحالة: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
-                wisdomTextElement.textContent = data.wisdom;
-                wisdomTextElement.className = '';
+
+                // 3. النجاح: عرض الحكمة بتأثير بصري جميل
+                wisdomText.classList.remove('visible'); // إخفاء النص القديم
+                setTimeout(() => {
+                    wisdomText.textContent = `"${data.wisdom}"`;
+                    wisdomText.classList.add('visible'); // إظهار النص الجديد
+                }, 100); // تأخير بسيط لإعطاء التأثير فرصة للعمل
+
             } catch (error) {
-                console.error('خطأ في الاتصال بالخادم:', error);
-                wisdomTextElement.textContent = 'تعذر الاتصال بالخادم. يرجى التأكد من تشغيله.';
-                wisdomTextElement.className = 'error';
+                // 4. الفشل: عرض رسالة خطأ واضحة للمستخدم
+                console.error('حدث خطأ أثناء جلب الحكمة:', error);
+                wisdomText.classList.remove('visible');
+                setTimeout(() => {
+                    wisdomText.textContent = 'عذراً، تعذر الاتصال بالخادم حالياً. حاول مجدداً.';
+                    wisdomText.classList.add('visible', 'error');
+                }, 100);
+
+            } finally {
+                // 5. النهاية: إعادة تفعيل الزر في كل الحالات (نجاح أو فشل)
+                getWisdomBtn.disabled = false;
             }
+        };
+
+        // --- ربط الحدث بالدالة ---
+        getWisdomBtn.addEventListener('click', fetchWisdom);
+        
+        // --- عرض الرسالة الترحيبية عند تحميل الصفحة ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                 wisdomText.classList.add('visible');
+            }, 300);
         });
+
     </script>
 
 </body>
