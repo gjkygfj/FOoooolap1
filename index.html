@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>حكمة اليوم</title>
+</head>
+<body>
+
+    <h1>حكمة اليوم</h1>
+    <button id="getWisdomBtn">احصل على حكمة</button>
+    <p id="wisdomText"></p>
+
+    <script>
+        document.getElementById('getWisdomBtn').addEventListener('click', async () => {
+            const wisdomText = document.getElementById('wisdomText');
+            wisdomText.textContent = 'جاري التحميل...';
+
+            try {
+                const response = await fetch('http://fi11.bot-hosting.net:20856/api/wisdom');
+                
+                if (!response.ok) {
+                    throw new Error('حدث خطأ في جلب الحكمة');
+                }
+                const data = await response.json();
+                wisdomText.textContent = data.wisdom;
+            } catch (error) {
+                console.error('Error:', error);
+                wisdomText.textContent = 'تعذر جلب الحكمة.';
+            }
+        });
+    </script>
+
+</body>
+</html>
