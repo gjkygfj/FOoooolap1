@@ -3,176 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حكمة اليوم | تطبيق متكامل</title>
-    
-    <!-- لتحسين المظهر على جميع الأجهزة -->
+    <title>منصة دردشة ومكالمات متكاملة</title>
+    <!-- مكتبات PeerJS و Pusher -->
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
     <style>
-        /* --- إعدادات أساسية --- */
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --background-color: #f4f7f9;
-            --card-background: #ffffff;
-            --text-color: #34495e;
-            --error-color: #e74c3c;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            margin: 0;
-            display: grid;
-            place-items: center;
-            min-height: 100vh;
-            text-align: center;
-        }
-
-        /* --- تصميم الكرت --- */
-        .card {
-            background-color: var(--card-background);
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
-            transition: transform 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        h1 {
-            color: var(--primary-color);
-            margin-top: 0;
-            font-size: 2.2em;
-        }
-        
-        /* --- تصميم منطقة عرض الحكمة --- */
-        .wisdom-display {
-            min-height: 100px; /* يحافظ على حجم ثابت للكرت */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 30px 0;
-        }
-
-        #wisdomText {
-            font-size: 1.4em;
-            font-style: italic;
-            color: var(--secondary-color);
-            line-height: 1.6;
-            margin: 0;
-            opacity: 0; /* يبدأ مخفياً ليظهر مع تأثير */
-            transform: translateY(10px);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-        
-        #wisdomText.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        #wisdomText.error {
-            color: var(--error-color);
-            font-style: normal;
-        }
-
-        /* --- تصميم الزر --- */
-        #getWisdomBtn {
-            background-color: var(--secondary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 15px 30px;
-            font-size: 1.1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-
-        #getWisdomBtn:hover {
-            background-color: #2980b9;
-            transform: scale(1.05);
-        }
-
-        #getWisdomBtn:disabled {
-            background-color: #bdc3c7;
-            cursor: not-allowed;
-        }
-
+        body { font-family: 'Tajawal', sans-serif; background-color: #121212; color: #fff; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .container { display: flex; width: 95vw; height: 95vh; gap: 15px; }
+        .video-container { flex: 3; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; background-color: #1e1e1e; border-radius: 10px; padding: 10px; }
+        .video-wrapper { position: relative; border-radius: 8px; overflow: hidden; }
+        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        .video-wrapper .name-tag { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; font-size: 0.9rem; }
+        .chat-container { flex: 1; display: flex; flex-direction: column; background-color: #1e1e1e; border-radius: 10px; overflow: hidden; }
+        .chat-header { background-color: #333; padding: 15px; text-align: center; font-weight: bold; }
+        .chat-messages { flex-grow: 1; padding: 10px; overflow-y: auto; }
+        .message { margin-bottom: 10px; }
+        .message .user { font-weight: bold; color: #bb86fc; }
+        .chat-form { display: flex; padding: 10px; }
+        #messageInput { flex-grow: 1; background: #333; border: 1px solid #555; color: #fff; padding: 8px; border-radius: 5px; }
+        #sendButton { background: #bb86fc; color: #121212; border: none; padding: 8px 12px; margin-right: 5px; border-radius: 5px; cursor: pointer; }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <main class="card">
-        <h1>حكمة اليوم</h1>
-        
-        <div class="wisdom-display">
-            <p id="wisdomText">اضغط على الزر لاقتباس حكمة ملهمة.</p>
+    <div class="container">
+        <div class="video-container" id="video-grid">
+            <!-- فيديوهات المستخدمين ستظهر هنا -->
         </div>
-        
-        <button id="getWisdomBtn">اقتبس حكمة جديدة</button>
-    </main>
+        <div class="chat-container">
+            <div class="chat-header">الدردشة النصية</div>
+            <div class="chat-messages" id="messages"></div>
+            <form class="chat-form" id="chatForm">
+                <input type="text" id="messageInput" placeholder="اكتب رسالتك..." autocomplete="off" required>
+                <button type="submit" id="sendButton">إرسال</button>
+            </form>
+        </div>
+    </div>
 
     <script>
-        // --- الوصول إلى عناصر الصفحة ---
-        const getWisdomBtn = document.getElementById('getWisdomBtn');
-        const wisdomText = document.getElementById('wisdomText');
+        // --- الإعدادات الأولية ---
+        const videoGrid = document.getElementById('video-grid');
+        const chatForm = document.getElementById('chatForm');
+        const messageInput = document.getElementById('messageInput');
+        const messagesContainer = document.getElementById('messages');
 
-        // --- دالة جلب الحكمة ---
-        const fetchWisdom = async () => {
-            // 1. مرحلة التحميل: تعطيل الزر وعرض رسالة مناسبة
-            getWisdomBtn.disabled = true;
-            wisdomText.classList.remove('visible', 'error');
-            wisdomText.textContent = 'جاري البحث عن حكمة...';
-            wisdomText.classList.add('visible');
+        const myPeerId = prompt("أدخل رقمك (1 أو 2):", Math.floor(Math.random() * 1000));
+        const myName = `المستخدم ${myPeerId}`;
 
-            try {
-                // 2. إرسال الطلب: استخدام المسار النسبي الذي سيعالجه Netlify
-                const response = await fetch('/api/wisdom');
+        // --- تهيئة الفيديو الخاص بي ---
+        const myVideo = document.createElement('video');
+        myVideo.muted = true; // كتم صوتي لنفسي
+        addVideoStream(myVideo, null, myName); // عرض الفيديو الخاص بي أولاً
 
-                // التعامل مع الأخطاء من جانب الخادم (مثل خطأ 500)
-                if (!response.ok) {
-                    throw new Error(`فشل الاتصال بالخادم. الحالة: ${response.status}`);
+        let myStream;
+        navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        }).then(stream => {
+            myStream = stream;
+            addVideoStream(myVideo, stream, myName);
+        }).catch(err => {
+            console.error("Failed to get local stream", err);
+            alert("لا يمكن الوصول للكاميرا. الرجاء السماح بالوصول.");
+        });
+
+        // --- تهيئة PeerJS ---
+        const peer = new Peer(myPeerId, {
+            // لا نحتاج لخادم PeerJS خارجي الآن لأننا سنستخدم Pusher للإشارة
+            // ولكن في تطبيق إنتاجي، يفضل وجود خادم TURN/STUN
+        });
+
+        // --- تهيئة Pusher (الجزء الأهم) ---
+        // نستخدم "قنوات الحضور" (Presence Channels) لمعرفة من هو متصل
+        const pusher = new Pusher('89d6f63e5c3177e7359c', {
+            cluster: 'eu',
+            authEndpoint: 'http://fi11.bot-hosting.net:20856/pusher/auth' // مسار التوثيق في الباك اند
+        });
+
+        const channel = pusher.subscribe('presence-video-chat');
+
+        // --- ربط PeerJS مع Pusher ---
+        // عندما يكتمل اشتراكي في القناة
+        channel.bind('pusher:subscription_succeeded', (members) => {
+            // عندما أدخل، أتصل بكل الأعضاء الموجودين قبلي
+            members.each(member => {
+                if (member.id !== pusher.connection.socket_id) {
+                    callUser(member.info.peerId);
                 }
+            });
+        });
 
-                const data = await response.json();
-
-                // 3. النجاح: عرض الحكمة بتأثير بصري جميل
-                wisdomText.classList.remove('visible'); // إخفاء النص القديم
-                setTimeout(() => {
-                    wisdomText.textContent = `"${data.wisdom}"`;
-                    wisdomText.classList.add('visible'); // إظهار النص الجديد
-                }, 100); // تأخير بسيط لإعطاء التأثير فرصة للعمل
-
-            } catch (error) {
-                // 4. الفشل: عرض رسالة خطأ واضحة للمستخدم
-                console.error('حدث خطأ أثناء جلب الحكمة:', error);
-                wisdomText.classList.remove('visible');
-                setTimeout(() => {
-                    wisdomText.textContent = 'عذراً، تعذر الاتصال بالخادم حالياً. حاول مجدداً.';
-                    wisdomText.classList.add('visible', 'error');
-                }, 100);
-
-            } finally {
-                // 5. النهاية: إعادة تفعيل الزر في كل الحالات (نجاح أو فشل)
-                getWisdomBtn.disabled = false;
-            }
-        };
-
-        // --- ربط الحدث بالدالة ---
-        getWisdomBtn.addEventListener('click', fetchWisdom);
+        // عندما ينضم عضو جديد
+        channel.bind('pusher:member_added', (member) => {
+            // العضو الجديد هو من سيتصل بي، لذا أنا سأنتظر مكالمته
+        });
         
-        // --- عرض الرسالة الترحيبية عند تحميل الصفحة ---
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                 wisdomText.classList.add('visible');
-            }, 300);
+        // عندما يخرج عضو
+        channel.bind('pusher:member_removed', (member) => {
+            // إزالة فيديو العضو الذي خرج
+            const videoToRemove = document.getElementById(member.info.peerId);
+            if (videoToRemove) videoToRemove.remove();
+        });
+
+        // عندما أتلقى مكالمة من شخص آخر
+        peer.on('call', call => {
+            call.answer(myStream); // أرد على المكالمة ببث الفيديو الخاص بي
+            const video = document.createElement('video');
+            call.on('stream', userVideoStream => {
+                addVideoStream(video, userVideoStream, call.peer); // عرض فيديو المتصل
+            });
+        });
+
+        function callUser(peerIdToCall) {
+            const call = peer.call(peerIdToCall, myStream);
+            const video = document.createElement('video');
+            call.on('stream', userVideoStream => {
+                addVideoStream(video, userVideoStream, peerIdToCall);
+            });
+        }
+        
+        // --- قسم الدردشة النصية ---
+        channel.bind('chat-message', (data) => {
+            appendChatMessage(data.user, data.message);
+        });
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // إرسال الرسالة إلى الخادم ليقوم بتوزيعها
+            fetch('http://fi11.bot-hosting.net:20856/api/message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user: myName, message: message })
+            });
+            messageInput.value = '';
+        });
+
+        // --- دوال مساعدة ---
+        function addVideoStream(video, stream, name) {
+            if(stream) video.srcObject = stream;
+            video.addEventListener('loadedmetadata', () => {
+                video.play();
+            });
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('video-wrapper');
+            wrapper.id = name;
+            const nameTag = document.createElement('div');
+            nameTag.classList.add('name-tag');
+            nameTag.innerText = name;
+            wrapper.append(video, nameTag);
+            videoGrid.append(wrapper);
+        }
+
+        function appendChatMessage(user, message) {
+            const msgElement = document.createElement('div');
+            msgElement.classList.add('message');
+            msgElement.innerHTML = `<span class="user">${user}:</span> ${message}`;
+            messagesContainer.append(msgElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // عندما يصبح peer جاهزًا، نقوم بتحديث معلوماتنا في القناة
+        peer.on('open', id => {
+            channel.members.me.info.peerId = id;
         });
 
     </script>
-
 </body>
 </html>
