@@ -1,31 +1,130 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>حكمة اليوم</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لحظة إلهام</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700&display=swap');
+        
+        :root {
+            --bg-color: #f0f4f8;
+            --text-color: #2c3e50;
+            --primary-color: #3498db;
+            --secondary-color: #95a5a6;
+            --card-bg: #ffffff;
+            --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Almarai', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-light);
+            max-width: 600px;
+            width: 100%;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 400;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        #wisdomText {
+            margin-top: 30px;
+            font-size: 1.2em;
+            font-weight: 300;
+            line-height: 1.6;
+            min-height: 50px;
+            color: #555;
+        }
+
+        .loading {
+            color: var(--secondary-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        .error {
+            color: #c0392b;
+            font-weight: 700;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    </style>
 </head>
 <body>
 
-    <h1>حكمة اليوم</h1>
-    <button id="getWisdomBtn">احصل على حكمة</button>
-    <p id="wisdomText"></p>
+    <div class="container">
+        <h1>نافذتك إلى الحكمة</h1>
+        <button id="getWisdomBtn">احصل على إلهام</button>
+        <p id="wisdomText">اضغط على الزر للحصول على حكمة جديدة.</p>
+    </div>
 
     <script>
         document.getElementById('getWisdomBtn').addEventListener('click', async () => {
-            const wisdomText = document.getElementById('wisdomText');
-            wisdomText.textContent = 'جاري التحميل...';
+            const wisdomTextElement = document.getElementById('wisdomText');
+            wisdomTextElement.textContent = 'جاري التحميل...';
+            wisdomTextElement.className = 'loading';
 
             try {
                 const response = await fetch('http://fi11.bot-hosting.net:20856/api/wisdom');
                 
                 if (!response.ok) {
-                    throw new Error('حدث خطأ في جلب الحكمة');
+                    let errorMessage = `حدث خطأ في جلب الحكمة (الرمز: ${response.status}).`;
+                    wisdomTextElement.textContent = errorMessage;
+                    wisdomTextElement.className = 'error';
+                    return;
                 }
+                
                 const data = await response.json();
-                wisdomText.textContent = data.wisdom;
+                wisdomTextElement.textContent = data.wisdom;
+                wisdomTextElement.className = '';
             } catch (error) {
-                console.error('Error:', error);
-                wisdomText.textContent = 'تعذر جلب الحكمة.';
+                console.error('خطأ في الاتصال بالخادم:', error);
+                wisdomTextElement.textContent = 'تعذر الاتصال بالخادم. يرجى التأكد من تشغيله.';
+                wisdomTextElement.className = 'error';
             }
         });
     </script>
